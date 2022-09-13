@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:recipe_app/constants.dart';
 import 'package:recipe_app/main.dart';
+import 'package:recipe_app/model/category_element.dart';
 import 'package:recipe_app/model/recipe_element.dart';
 import 'package:recipe_app/model/recipe_model.dart';
+import 'package:recipe_app/service/category_service.dart';
 import 'package:recipe_app/service/recipe_service.dart';
 import '../components/vertical_scroll_text.dart';
 import '../components/recipe_card.dart';
 import '../objectbox/model.dart';
+import '../model/category_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -23,13 +26,16 @@ enum Category {
 
 class _HomeScreenState extends State<HomeScreen> {
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
    late Category currentCategory = Category.popular;
    List<RecipeAPI> recipeList = [];
+   List<CategoryElement> categoryList = [];
 
    @override
   void initState() {
     super.initState();
     getRecipesList();
+    getCategoriesList();
   }
 
   Future<void> addRecipe() async {
@@ -45,9 +51,25 @@ class _HomeScreenState extends State<HomeScreen> {
    Future<void> getRecipesList() async {
      RecipeService recipeService = RecipeService();
      var data = await recipeService.fetchRecipes();
+
      var test = RecipeElement.fromJson(jsonDecode(data.body));
      recipeList = test.recipes.map((recipe) => RecipeAPI.fromJson(recipe)).toList();
+     print(recipeList.length);
+     
+     print(recipeList[0].ingredients.length);
    }
+
+
+  Future<void> getCategoriesList() async {
+    CategoryService categoryService = CategoryService();
+    var data = await categoryService.fetchCategories();
+    var test = CategoryApi.fromJson(jsonDecode(data.body));
+
+    categoryList = test.data.map((category) => CategoryElement.fromJson(category)).toList();
+
+     print(categoryList[0].name);
+     print(categoryList[0].id);
+  }
 
 
    Future<void> getRecipes() async {
@@ -80,9 +102,46 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Drawer(
+        backgroundColor:  kVeryDarkGray,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Container(
+              height: 112.0,
+              child: DrawerHeader(
+                // padding: EdgeInsets.all(30.0),
+                decoration: BoxDecoration(
+                  color: kVeryDarkGray,
+                ),
+                child: Column(
+                  children: [
+                    Text('Menu'),
+                    Divider(color: kDarkGray,),
+                  ],
+                ),
+
+              ),
+            ),
+            for(int i = 0; i < categoryList.length; i++)
+            ListTile(
+              title: Text(categoryList[i].name),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: kMostlyBlack,
-        leading: Icon(Icons.menu, color: kVividOrange,),
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: kVividOrange,),
+          onPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
+        ),
         actions: [
               // Icon(Icons.favorite, color: kVividOrange,),
             CircleAvatar(
@@ -156,54 +215,30 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             SizedBox(height: 15.0,),
+
             Container(
               height: MediaQuery.of(context).size.height * 0.55,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        RecipeCard(
-                          onTap: () {
-
-                          },
-                          favoriteIcon: Icons.favorite,
-                          imageAsset: recipeList[0].imageUrl,
-                          recipeName: recipeList[0].title,
-                          cookingTime: '15 min',
-                          starIcon: Icons.star,
-                          rating: '4.7',
-                        ),
-                        SizedBox(width: 20.0,),
-                        RecipeCard(
-                          onTap: () {
-
-                          },
-                          favoriteIcon: Icons.favorite_border,
-                          imageAsset: recipeList[1].imageUrl,
-                          recipeName: 'Grilled salmon with avocado',
-                          cookingTime: '15 min',
-                          starIcon: Icons.star_border,
-                          rating: '5.0',
-                        ),
-                      ],
-                    ),
-
-
-                    FlatButton(onPressed: () {
-                      addRecipe();
-                    }, child: Text('Add recipe'),
-                    ),
-
-
-        for (var element in objectBox.recipeBox.get(24)!.ingredients)
-          Text(element.name),
-
-                // Text('${objectBox.recipeBox.get(24)!.ingredients.length}'),
-                  // Text('${objectBox.recipeBox.count()}'),
-                  // Text('${objectBox.recipeBox.getAll()}'),
-                  ],
-                ),
+              margin: EdgeInsets.only(top: 30.0),
+              child: GridView.count(
+                shrinkWrap: false,
+                physics: ClampingScrollPhysics(),
+                childAspectRatio: 0.65,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                crossAxisCount: 2,
+                scrollDirection: Axis.vertical,
+                children: [
+                  for (var i = 0; i < recipeList.length; i++)
+                  RecipeCard(
+                    onTap: () {},
+                    favoriteIcon: Icons.favorite,
+                    imageAsset: recipeList[i].imageUrl,
+                    recipeName: recipeList[i].title,
+                    cookingTime: '${recipeList[i].cookingTime}',
+                    starIcon: Icons.star,
+                    rating: '${recipeList[i].rating}',
+                  ),
+                ],
               ),
             ),
           ],
@@ -214,5 +249,55 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 
+// GridView.count(
+// crossAxisCount: 2,
+// scrollDirection: Axis.vertical,
+// children: [
+// RecipeCard(
+// onTap: () {
+//
+// },
+// favoriteIcon: Icons.favorite,
+// imageAsset: recipeList[0].imageUrl,
+// recipeName: recipeList[0].title,
+// cookingTime: '15 min',
+// starIcon: Icons.star,
+// rating: '4.7',
+// ),
+// ],
+// ),
 
-
+// SingleChildScrollView(
+// child: Column(
+// children: [
+// Row(
+// children: [
+// RecipeCard(
+// onTap: () {
+//
+// },
+// favoriteIcon: Icons.favorite,
+// imageAsset: recipeList[0].imageUrl,
+// recipeName: recipeList[0].title,
+// cookingTime: '15 min',
+// starIcon: Icons.star,
+// rating: '4.7',
+// ),
+// SizedBox(width: 20.0,),
+// RecipeCard(
+// onTap: () {
+//
+// },
+// favoriteIcon: Icons.favorite_border,
+// imageAsset: recipeList[1].imageUrl,
+// recipeName: 'Grilled salmon with avocado',
+// cookingTime: '15 min',
+// starIcon: Icons.star_border,
+// rating: '5.0',
+// ),
+// ],
+// ),
+// Text('${recipeList[0].id}'),
+// ],
+// ),
+// ),
