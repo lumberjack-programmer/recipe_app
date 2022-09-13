@@ -4,7 +4,7 @@ import '../constants.dart';
 
 class RecipeCard extends StatelessWidget {
 
-  IconData favoriteIcon;
+  IconButton favoriteIcon;
   String imageAsset;
   String recipeName;
   String cookingTime;
@@ -33,7 +33,7 @@ class RecipeCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Icon(favoriteIcon = Icons.favorite_border , color: kVividOrange, size: 20.0,),
+                  favoriteIcon,
                 ],
               ),
               SizedBox(height: 10.0,),
@@ -41,7 +41,7 @@ class RecipeCard extends StatelessWidget {
                 width: 110.0,
                 height: 100.0,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
+                  borderRadius: BorderRadius.circular(50.0),
                   child: FittedBox(
                       fit: BoxFit.fill,
                       child: Image.network(imageAsset)),

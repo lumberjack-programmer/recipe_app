@@ -15,11 +15,10 @@ class RecipeAPI {
   final level;
   final rating;
   final List<IngredientElement> ingredients;
-
-  // for (var recipe in recipeList) { if(recipe.recipeCategory == "Popular") recipeListByCategory.add(recipe); }
+  bool favorite;
 
   RecipeAPI({required this.id, required this.title, required this.recipeCategory, required this.description, required this.imageUrl, required this.cookingTime,
-  required this.preparationTime, this.calories, required this.level, required this.rating, required this.ingredients});
+  required this.preparationTime, this.calories, required this.level, required this.rating, required this.ingredients, required this.favorite});
 
   factory RecipeAPI.fromJson(Map<String, dynamic> json) {
     return RecipeAPI(
@@ -30,9 +29,11 @@ class RecipeAPI {
         imageUrl: json['imageUrl'],
         cookingTime: json['cookingTime'],
         preparationTime: json['preparationTime'],
+        calories: json['calories'],
         level: json['level'],
         rating: json['rating'],
-        ingredients: ((json['ingredients'] as List<dynamic>).map((ingredient) => IngredientElement.fromJson(ingredient)).toList())
+        ingredients: ((json['ingredients'] as List<dynamic>).map((ingredient) => IngredientElement.fromJson(ingredient)).toList()),
+        favorite: false
     );
   }
 }

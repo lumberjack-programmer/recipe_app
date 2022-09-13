@@ -6,6 +6,7 @@ import 'package:recipe_app/main.dart';
 import 'package:recipe_app/model/category_element.dart';
 import 'package:recipe_app/model/recipe_element.dart';
 import 'package:recipe_app/model/recipe_model.dart';
+import 'package:recipe_app/screens/recipe_details.dart';
 import 'package:recipe_app/service/category_service.dart';
 import 'package:recipe_app/service/recipe_service.dart';
 import '../components/vertical_scroll_text.dart';
@@ -21,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 enum Category {
-  popular, mainDishes, breakfast, dinner, launch
+  popular, mainDishes, breakfast, dinner, lunch
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -67,8 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     categoryList = test.data.map((category) => CategoryElement.fromJson(category)).toList();
 
-     print(categoryList[0].name);
-     print(categoryList[0].id);
   }
 
   List<RecipeAPI> recipeListByCategory = [];
@@ -132,6 +131,9 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 setState(() {
                   populateRecipeListByCategory(categoryList[i].name);
+
+                  setCategoryMenu(i);
+
                 });
                 Navigator.pop(context);
               },
@@ -217,12 +219,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   VerticalScrollText(
                     onTap: () {
                       setState(() {
-                        currentCategory = Category.launch;
-                        populateRecipeListByCategory("launch");
+                        currentCategory = Category.lunch;
+                        populateRecipeListByCategory("lunch");
                       });
                     },
-                    text: 'Launch',
-                    color: currentCategory == Category.launch ? Colors.white : kDarkGray,),
+                    text: 'Lunch',
+                    color: currentCategory == Category.lunch ? Colors.white : kDarkGray,),
                 ],
               ),
             ),
@@ -231,32 +233,60 @@ class _HomeScreenState extends State<HomeScreen> {
             recipeListByCategory.isEmpty ? SizedBox( height: MediaQuery.of(context).size.height * 0.55, child: Center(child: Text('No Recipes found'),)) : Container(
               height: MediaQuery.of(context).size.height * 0.55,
               margin: EdgeInsets.only(top: 30.0),
-              child: GridView.count(
-                shrinkWrap: false,
-                physics: ClampingScrollPhysics(),
-                childAspectRatio: 0.65,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                crossAxisCount: 2,
-                scrollDirection: Axis.vertical,
-                children: [
-                  for (var i = 0; i < recipeListByCategory.length; i++)
-                  RecipeCard(
-                    onTap: () {},
-                    favoriteIcon: Icons.favorite,
-                    imageAsset: recipeListByCategory[i].imageUrl,
-                    recipeName: recipeListByCategory[i].title,
-                    cookingTime: '${recipeListByCategory[i].cookingTime}',
-                    starIcon: Icons.star,
-                    rating: '${recipeListByCategory[i].rating}',
-                  ),
-                ],
+              child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                    childAspectRatio: 0.62,
+                    crossAxisSpacing: 6,
+                    mainAxisSpacing: 6,
+                    maxCrossAxisExtent: 200,
               ),
+                  itemCount: recipeListByCategory.length,
+                  itemBuilder: (BuildContext context, i) {
+                return RecipeCard(
+                  onTap: () {
+                    Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RecipeDetails(
+                                    recipeSelected: recipeListByCategory[i],
+                                  ),
+                                ),
+                              );
+                            },
+                  favoriteIcon: IconButton(
+                    splashRadius: 20,
+                      onPressed: () {
+                    setState(() {
+                      recipeListByCategory[i].favorite = !recipeListByCategory[i].favorite;
+                    });
+                  }, icon: recipeListByCategory[i].favorite == true ? Icon(Icons.favorite, color: kVividOrange,) : Icon(Icons.favorite_border, color: kVividOrange,)),
+                  imageAsset: recipeListByCategory[i].imageUrl,
+                  recipeName: recipeListByCategory[i].title,
+                  cookingTime: '${recipeListByCategory[i].cookingTime}',
+                  starIcon: Icons.star,
+                  rating: '${recipeListByCategory[i].rating}',
+                );
+              }
+              )
             ),
           ],
         ),
       ),
     );
+  }
+
+  void setCategoryMenu(int i) {
+       if(categoryList[i].name == "Popular"){
+      currentCategory = Category.popular;
+    } else if(categoryList[i].name == "Main dishes"){
+      currentCategory = Category.mainDishes;
+    } else if(categoryList[i].name == "Breakfast"){
+      currentCategory = Category.breakfast;
+    } else if(categoryList[i].name == "Dinner"){
+      currentCategory = Category.dinner;
+    } else if(categoryList[i].name == "Lunch"){
+      currentCategory = Category.lunch;
+    }
   }
 
   void populateRecipeListByCategory(String category) {
@@ -266,57 +296,3 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 }
-
-
-// GridView.count(
-// crossAxisCount: 2,
-// scrollDirection: Axis.vertical,
-// children: [
-// RecipeCard(
-// onTap: () {
-//
-// },
-// favoriteIcon: Icons.favorite,
-// imageAsset: recipeList[0].imageUrl,
-// recipeName: recipeList[0].title,
-// cookingTime: '15 min',
-// starIcon: Icons.star,
-// rating: '4.7',
-// ),
-// ],
-// ),
-
-// SingleChildScrollView(
-// child: Column(
-// children: [
-// Row(
-// children: [
-// RecipeCard(
-// onTap: () {
-//
-// },
-// favoriteIcon: Icons.favorite,
-// imageAsset: recipeList[0].imageUrl,
-// recipeName: recipeList[0].title,
-// cookingTime: '15 min',
-// starIcon: Icons.star,
-// rating: '4.7',
-// ),
-// SizedBox(width: 20.0,),
-// RecipeCard(
-// onTap: () {
-//
-// },
-// favoriteIcon: Icons.favorite_border,
-// imageAsset: recipeList[1].imageUrl,
-// recipeName: 'Grilled salmon with avocado',
-// cookingTime: '15 min',
-// starIcon: Icons.star_border,
-// rating: '5.0',
-// ),
-// ],
-// ),
-// Text('${recipeList[0].id}'),
-// ],
-// ),
-// ),
