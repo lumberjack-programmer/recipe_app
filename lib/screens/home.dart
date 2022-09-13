@@ -54,9 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
      var test = RecipeElement.fromJson(jsonDecode(data.body));
      recipeList = test.recipes.map((recipe) => RecipeAPI.fromJson(recipe)).toList();
-     print(recipeList.length);
-     
-     print(recipeList[0].ingredients.length);
+
+
+     print(recipeList[0].recipeCategory);
    }
 
 
@@ -70,6 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
      print(categoryList[0].name);
      print(categoryList[0].id);
   }
+
+  List<RecipeAPI> recipeListByCategory = [];
 
 
    Future<void> getRecipes() async {
@@ -128,6 +130,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               title: Text(categoryList[i].name),
               onTap: () {
+                setState(() {
+                  populateRecipeListByCategory(categoryList[i].name);
+                });
                 Navigator.pop(context);
               },
             ),
@@ -175,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       setState(() {
                         currentCategory = Category.popular;
+                        populateRecipeListByCategory("Popular");
                       });
                     },
                     text: 'Popular',
@@ -183,14 +189,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       setState(() {
                         currentCategory = Category.mainDishes;
+                        populateRecipeListByCategory("main dishes");
+
                       });
                     },
+
                     text: 'Main dishes',
                   color: currentCategory == Category.mainDishes ? Colors.white : kDarkGray,),
                   VerticalScrollText(
                     onTap: () {
                       setState(() {
                         currentCategory = Category.breakfast;
+                        populateRecipeListByCategory("breakfast");
                       });
                     },
                     text: 'Breakfast',
@@ -199,7 +209,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       setState(() {
                         currentCategory = Category.dinner;
-                      });
+                        populateRecipeListByCategory("dinner");
+                        });
                     },
                     text: 'Dinner',
                     color: currentCategory == Category.dinner ? Colors.white : kDarkGray,),
@@ -207,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       setState(() {
                         currentCategory = Category.launch;
+                        populateRecipeListByCategory("launch");
                       });
                     },
                     text: 'Launch',
@@ -216,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 15.0,),
 
-            Container(
+            recipeListByCategory.isEmpty ? SizedBox( height: MediaQuery.of(context).size.height * 0.55, child: Center(child: Text('No Recipes found'),)) : Container(
               height: MediaQuery.of(context).size.height * 0.55,
               margin: EdgeInsets.only(top: 30.0),
               child: GridView.count(
@@ -228,15 +240,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisCount: 2,
                 scrollDirection: Axis.vertical,
                 children: [
-                  for (var i = 0; i < recipeList.length; i++)
+                  for (var i = 0; i < recipeListByCategory.length; i++)
                   RecipeCard(
                     onTap: () {},
                     favoriteIcon: Icons.favorite,
-                    imageAsset: recipeList[i].imageUrl,
-                    recipeName: recipeList[i].title,
-                    cookingTime: '${recipeList[i].cookingTime}',
+                    imageAsset: recipeListByCategory[i].imageUrl,
+                    recipeName: recipeListByCategory[i].title,
+                    cookingTime: '${recipeListByCategory[i].cookingTime}',
                     starIcon: Icons.star,
-                    rating: '${recipeList[i].rating}',
+                    rating: '${recipeListByCategory[i].rating}',
                   ),
                 ],
               ),
@@ -245,6 +257,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void populateRecipeListByCategory(String category) {
+     recipeListByCategory = [];
+    if (recipeList.isNotEmpty){
+      for (var recipe in recipeList) { if(recipe.recipeCategory.toString().toLowerCase() == category.toLowerCase()) recipeListByCategory.add(recipe); }
+    }
   }
 }
 

@@ -16,7 +16,7 @@ class RecipeAPI {
   final rating;
   final List<IngredientElement> ingredients;
 
-
+  // for (var recipe in recipeList) { if(recipe.recipeCategory == "Popular") recipeListByCategory.add(recipe); }
 
   RecipeAPI({required this.id, required this.title, required this.recipeCategory, required this.description, required this.imageUrl, required this.cookingTime,
   required this.preparationTime, this.calories, required this.level, required this.rating, required this.ingredients});
@@ -25,7 +25,7 @@ class RecipeAPI {
     return RecipeAPI(
         id: json['id'],
         title: json['title'],
-        recipeCategory: json['recipeCategory'],
+        recipeCategory: json['recipeCategory']['name'],
         description: json['description'],
         imageUrl: json['imageUrl'],
         cookingTime: json['cookingTime'],
