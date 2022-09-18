@@ -32,6 +32,19 @@ class _HomeScreenState extends State<HomeScreen> {
    List<RecipeAPI> recipeList = [];
    List<CategoryElement> categoryList = [];
 
+  void searchRecipe(String query) {
+    final results = recipeList.where((recipe) {
+      final recipeTitle = recipe.title.toString().toLowerCase();
+      final inputStr = query.toLowerCase();
+
+      return recipeTitle.contains(inputStr);
+    }).toList();
+
+    setState(() {
+      recipeListByCategory = results;
+    });
+  }
+
    @override
   void initState() {
     super.initState();
@@ -131,7 +144,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 setState(() {
                   populateRecipeListByCategory(categoryList[i].name);
-
                   setCategoryMenu(i);
 
                 });
@@ -157,119 +169,139 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Text(
-              'Find the same recipe for yourself',
-              style: TextStyle(
-                fontSize: 35.0,
-              ),
+      body: Center(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                kMostlyBlack,
+                kDarkGray,
+              ],
+              stops: [
+                0.0,
+                1.0,
+              ],
             ),
-            Container(
-              margin: EdgeInsets.only(top: 20.0, bottom: 40.0,),
-              child: TextFormField(
-                  decoration: kInputDecoration,
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  VerticalScrollText(
-                    onTap: () {
-                      setState(() {
-                        currentCategory = Category.popular;
-                        populateRecipeListByCategory("Popular");
-                      });
-                    },
-                    text: 'Popular',
-                    color: currentCategory == Category.popular ? Colors.white : kDarkGray,),
-                  VerticalScrollText(
-                    onTap: () {
-                      setState(() {
-                        currentCategory = Category.mainDishes;
-                        populateRecipeListByCategory("main dishes");
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                Text(
+                  'Find the same recipe for yourself',
+                  style: TextStyle(
+                    fontSize: 35.0,
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(top: 20.0, bottom: 40.0,),
+                  child: TextFormField(
+                    focusNode: FocusNode(),
+                    onChanged: searchRecipe,
+                      decoration: kInputDecoration,
+                  ),
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      VerticalScrollText(
+                        onTap: () {
+                          setState(() {
+                            currentCategory = Category.popular;
+                            populateRecipeListByCategory("Popular");
+                          });
+                        },
+                        text: 'Popular',
+                        color: currentCategory == Category.popular ? Colors.white : kDarkGray,),
+                      VerticalScrollText(
+                        onTap: () {
+                          setState(() {
+                            currentCategory = Category.mainDishes;
+                            populateRecipeListByCategory("main dishes");
 
-                      });
-                    },
+                          });
+                        },
 
-                    text: 'Main dishes',
-                  color: currentCategory == Category.mainDishes ? Colors.white : kDarkGray,),
-                  VerticalScrollText(
-                    onTap: () {
-                      setState(() {
-                        currentCategory = Category.breakfast;
-                        populateRecipeListByCategory("breakfast");
-                      });
-                    },
-                    text: 'Breakfast',
-                    color: currentCategory == Category.breakfast ? Colors.white : kDarkGray,),
-                  VerticalScrollText(
-                    onTap: () {
-                      setState(() {
-                        currentCategory = Category.dinner;
-                        populateRecipeListByCategory("dinner");
+                        text: 'Main dishes',
+                      color: currentCategory == Category.mainDishes ? Colors.white : kDarkGray,),
+                      VerticalScrollText(
+                        onTap: () {
+                          setState(() {
+                            currentCategory = Category.breakfast;
+                            populateRecipeListByCategory("breakfast");
+                          });
+                        },
+                        text: 'Breakfast',
+                        color: currentCategory == Category.breakfast ? Colors.white : kDarkGray,),
+                      VerticalScrollText(
+                        onTap: () {
+                          setState(() {
+                            currentCategory = Category.dinner;
+                            populateRecipeListByCategory("dinner");
+                            });
+                        },
+                        text: 'Dinner',
+                        color: currentCategory == Category.dinner ? Colors.white : kDarkGray,),
+                      VerticalScrollText(
+                        onTap: () {
+                          setState(() {
+                            currentCategory = Category.lunch;
+                            populateRecipeListByCategory("lunch");
+                          });
+                        },
+                        text: 'Lunch',
+                        color: currentCategory == Category.lunch ? Colors.white : kDarkGray,),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 15.0,),
+
+                recipeListByCategory.isEmpty ? SizedBox( height: MediaQuery.of(context).size.height * 0.55, child: Center(child: Text('No Recipes found'),)) : Container(
+                  height: MediaQuery.of(context).size.height * 0.55,
+                  margin: EdgeInsets.only(top: 30.0),
+                  child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        childAspectRatio: 0.62,
+                        crossAxisSpacing: 6,
+                        mainAxisSpacing: 6,
+                        maxCrossAxisExtent: 200,
+                  ),
+                      itemCount: recipeListByCategory.length,
+                      itemBuilder: (BuildContext context, i) {
+                    return RecipeCard(
+                      onTap: () {
+                        Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RecipeDetails(
+                                        recipeSelected: recipeListByCategory[i],
+                                      ),
+                                    ),
+                                  );
+                                },
+                      favoriteIcon: IconButton(
+                        splashRadius: 20,
+                          onPressed: () {
+                        setState(() {
+                          recipeListByCategory[i].favorite = !recipeListByCategory[i].favorite;
                         });
-                    },
-                    text: 'Dinner',
-                    color: currentCategory == Category.dinner ? Colors.white : kDarkGray,),
-                  VerticalScrollText(
-                    onTap: () {
-                      setState(() {
-                        currentCategory = Category.lunch;
-                        populateRecipeListByCategory("lunch");
-                      });
-                    },
-                    text: 'Lunch',
-                    color: currentCategory == Category.lunch ? Colors.white : kDarkGray,),
-                ],
-              ),
+                      }, icon: recipeListByCategory[i].favorite == true ? Icon(Icons.favorite, color: kVividOrange,) : Icon(Icons.favorite_border, color: kVividOrange,)),
+                      imageAsset: recipeListByCategory[i].imageUrl,
+                      recipeName: recipeListByCategory[i].title,
+                      cookingTime: '${recipeListByCategory[i].cookingTime}',
+                      starIcon: Icons.star,
+                      rating: '${recipeListByCategory[i].rating}',
+                    );
+                  }
+                  )
+                ),
+              ],
             ),
-            SizedBox(height: 15.0,),
-
-            recipeListByCategory.isEmpty ? SizedBox( height: MediaQuery.of(context).size.height * 0.55, child: Center(child: Text('No Recipes found'),)) : Container(
-              height: MediaQuery.of(context).size.height * 0.55,
-              margin: EdgeInsets.only(top: 30.0),
-              child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                    childAspectRatio: 0.62,
-                    crossAxisSpacing: 6,
-                    mainAxisSpacing: 6,
-                    maxCrossAxisExtent: 200,
-              ),
-                  itemCount: recipeListByCategory.length,
-                  itemBuilder: (BuildContext context, i) {
-                return RecipeCard(
-                  onTap: () {
-                    Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => RecipeDetails(
-                                    recipeSelected: recipeListByCategory[i],
-                                  ),
-                                ),
-                              );
-                            },
-                  favoriteIcon: IconButton(
-                    splashRadius: 20,
-                      onPressed: () {
-                    setState(() {
-                      recipeListByCategory[i].favorite = !recipeListByCategory[i].favorite;
-                    });
-                  }, icon: recipeListByCategory[i].favorite == true ? Icon(Icons.favorite, color: kVividOrange,) : Icon(Icons.favorite_border, color: kVividOrange,)),
-                  imageAsset: recipeListByCategory[i].imageUrl,
-                  recipeName: recipeListByCategory[i].title,
-                  cookingTime: '${recipeListByCategory[i].cookingTime}',
-                  starIcon: Icons.star,
-                  rating: '${recipeListByCategory[i].rating}',
-                );
-              }
-              )
-            ),
-          ],
+          ),
         ),
       ),
     );

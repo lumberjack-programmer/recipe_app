@@ -20,7 +20,7 @@ const Color kSoftOrange = Color(0xffDEB654);
 var kInputDecoration = InputDecoration(
   prefixIcon: Icon(Icons.search, color: kVividOrange, size: 25.0,),
   floatingLabelBehavior: FloatingLabelBehavior.never,
-  fillColor: kVeryDarkGray,
+  fillColor: kMostlyBlack,
   filled: true,
   isDense: true,
   contentPadding: EdgeInsets.all(5),
